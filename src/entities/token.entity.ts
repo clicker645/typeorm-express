@@ -1,4 +1,4 @@
-export class TokenEntity {
+export class Token {
   jwt: string;
   expiresAt: string;
   expiresIn: number;

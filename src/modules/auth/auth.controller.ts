@@ -6,9 +6,8 @@ import * as asyncHandler from "express-async-handler";
 import { LoginDto } from "./dto/login.dto";
 import { AuthService } from "./auth.service";
 import "reflect-metadata";
-import { validate } from "class-validator";
-import * as error from "http-errors";
 import * as statusCode from "http-status-codes";
+import validationMiddleware from "../../middleware/validation.middleware";
 
 @injectable()
 class AuthController implements IController {
@@ -20,15 +19,17 @@ class AuthController implements IController {
   }
 
   login = async (req: Request, res: Response) => {
-    const data = req.body as LoginDto;
+    let response = null;
+    const loginDto = req.body as LoginDto;
 
-    const err = await validate(Object.assign(new LoginDto(), data));
-
-    if (err.length > 0) {
-      res.status(statusCode.UNPROCESSABLE_ENTITY).json({ message: err });
+    try {
+      response = await this.authService.login(loginDto);
+    } catch (e) {
+      res.status(statusCode.INTERNAL_SERVER_ERROR).json({ message: e });
+      return;
     }
 
-    res.json(await this.authService.login(data));
+    res.json(response);
   };
 
   logout = (req: Request, res: Response) => {
@@ -44,7 +45,11 @@ class AuthController implements IController {
   };
 
   public initRoutes() {
-    this.router.post("/login", asyncHandler(this.login));
+    this.router.post(
+      "/login",
+      validationMiddleware(LoginDto),
+      asyncHandler(this.login)
+    );
     this.router.post("/logout", asyncHandler(this.logout));
     this.router.post("/registration", asyncHandler(this.registration));
     this.router.get("/confirm/:token", asyncHandler(this.confirm));

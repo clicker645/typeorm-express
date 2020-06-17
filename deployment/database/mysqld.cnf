@@ -1,0 +1,35 @@
+[mysqld]
+
+sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+#
+# * Fine Tuning
+#
+key_buffer_size		= 2048M
+max_allowed_packet	= 100M
+thread_stack		= 512K
+thread_cache_size       = 32
+# This replaces the startup script and checks MyISAM tables if needed
+# the first time they are touched
+myisam-recover-options  = BACKUP
+max_connections		= 600
+table_open_cache	= 32768
+
+
+#thread_concurrency     = 10
+#
+# * InnoDB
+#
+# InnoDB is enabled by default with a 10MB datafile in /var/lib/mysql/.
+# Read the manual for more InnoDB related options. There are many!
+innodb_buffer_pool_size		= 5G
+innodb_log_file_size		= 512M
+innodb_lock_wait_timeout	= 120
+# MySQL Tuner
+tmp_table_size			= 512M
+max_heap_table_size		= 256M
+innodb_buffer_pool_instances	= 1
+sort_buffer_size		= 4M
+read_buffer_size		= 4M
+read_rnd_buffer_size		= 8M
+join_buffer_size		= 8M
+performance_schema		= OFF
