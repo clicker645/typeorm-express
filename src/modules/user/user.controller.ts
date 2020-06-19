@@ -1,35 +1,30 @@
-import { inject, injectable } from "inversify";
 import { IController } from "../../interfaces/controller.interface";
-import * as express from "express";
 import { UserService } from "./user.service";
 import { Request, Response } from "express";
 import { CreateUserDto } from "./dto/create-user.dto";
 import * as statusCode from "http-status-codes";
-import validationMiddleware from "../../middleware/validation.middleware";
-import * as asyncHandler from "express-async-handler";
-import { QueryUserDto } from "./dto/query-user.dto";
 import { plainToClass } from "class-transformer";
 import { PaginationOptions } from "../../infrastructure/database/sql/pagination/pagination.dto";
+import { Controller, Get, Post } from "@decorators/express";
+import { Injectable } from "@decorators/di";
 
-@injectable()
+@Controller("/user")
+@Injectable()
 export class UserController implements IController {
-  prefix: string = "/user";
-  public router = express.Router();
-
-  constructor(@inject(UserService) private readonly userService: UserService) {
-    this.initRoutes();
+  constructor(private readonly userService: UserService) {
+    console.log("UserController init");
   }
 
-  findBy = async (req: Request, res: Response) => {
-    const query = plainToClass(QueryUserDto, req.query);
+  @Get("/")
+  async findBy(req: Request, res: Response) {
     const pagination = plainToClass(PaginationOptions, req.query);
-
-    const response = await this.userService.findBy(query, pagination);
+    const response = await this.userService.find(req.query, pagination);
 
     res.json(response);
-  };
+  }
 
-  create = async (req: Request, res: Response) => {
+  @Post("/")
+  async create(req: Request, res: Response) {
     const userDto = req.body as CreateUserDto;
     let response = null;
     try {
@@ -40,14 +35,5 @@ export class UserController implements IController {
     }
 
     res.json(response);
-  };
-
-  initRoutes() {
-    this.router.post(
-      "/",
-      validationMiddleware(CreateUserDto),
-      asyncHandler(this.create)
-    );
-    this.router.get("/", asyncHandler(this.findBy));
   }
 }

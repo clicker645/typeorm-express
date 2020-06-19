@@ -1,11 +1,13 @@
-import { inject, injectable } from "inversify";
 import { RedisConnection } from "./redis.connection";
+import { Inject, Injectable } from "@decorators/di";
 
-@injectable()
+@Injectable()
 export class RedisService {
   constructor(
-    @inject(RedisConnection) private readonly redis: RedisConnection
-  ) {}
+    @Inject(RedisConnection) private readonly redis: RedisConnection
+  ) {
+    console.log("RedisService init");
+  }
 
   async set(key: string, value: any, duration: number): Promise<boolean> {
     return this.redis.client.set(

@@ -1,7 +1,7 @@
 import * as redis from "redis";
-import { injectable } from "inversify";
+import { Injectable } from "@decorators/di";
 
-@injectable()
+@Injectable()
 export class RedisConnection {
   public client: redis.RedisClient;
   constructor() {

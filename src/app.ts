@@ -1,7 +1,9 @@
 import * as express from "express";
 import { Application } from "express";
-import MiddlewareType from "./types/middleware.type";
 import { IController } from "./interfaces/controller.interface";
+import { attachControllers, Type } from "@decorators/express";
+import AuthController from "./modules/auth/auth.controller";
+import { UserController } from "./modules/user/user.controller";
 
 class App {
   public app: Application;
@@ -10,7 +12,7 @@ class App {
   constructor(appInit: {
     port: number;
     controllers: IController[];
-    middlewares: MiddlewareType[];
+    middlewares: any;
   }) {
     this.app = express();
     this.port = appInit.port;
@@ -19,16 +21,14 @@ class App {
     this.initRoutes(appInit.controllers);
   }
 
-  private applyMiddlewares(middlewares: MiddlewareType[]): void {
+  private applyMiddlewares(middlewares: any): void {
     middlewares.forEach((middleware) => {
       this.app.use(middleware);
     });
   }
 
-  private initRoutes(controllers: IController[]): void {
-    controllers.forEach((controller) => {
-      this.app.use(controller.prefix, controller.router);
-    });
+  private initRoutes(controllers: any): void {
+    attachControllers(this.app, [AuthController, UserController]);
   }
 
   public listen() {

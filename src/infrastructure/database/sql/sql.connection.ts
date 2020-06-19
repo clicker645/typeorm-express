@@ -1,12 +1,13 @@
-import { injectable } from "inversify";
 import "reflect-metadata";
 import { Connection, createConnection } from "typeorm";
+import { Injectable } from "@decorators/di";
 
-@injectable()
+@Injectable()
 export class SqlDatabase {
   connection: Promise<Connection>;
 
   constructor() {
+    console.log("SqlDatabase init");
     this.connection = createConnection();
   }
 }
