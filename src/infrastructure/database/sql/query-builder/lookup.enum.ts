@@ -13,7 +13,10 @@ export enum LookupFilter {
   NOT = "not",
 }
 
+export enum LookupOptions {
+  RELATIONS = "relations",
+}
+
 export enum LookupDelimiter {
   LOOKUP_DELIMITER = "__",
-  RELATION_DELIMITER = ".",
 }

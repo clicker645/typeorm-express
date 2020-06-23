@@ -1,10 +1,11 @@
+import "reflect-metadata";
+import { inject, injectable } from "inversify";
 import { RedisConnection } from "./redis.connection";
-import { Inject, Injectable } from "@decorators/di";
 
-@Injectable()
+@injectable()
 export class RedisService {
   constructor(
-    @Inject(RedisConnection) private readonly redis: RedisConnection
+    @inject(RedisConnection) private readonly redis: RedisConnection
   ) {
     console.log("RedisService init");
   }

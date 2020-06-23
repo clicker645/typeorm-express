@@ -1,5 +1,5 @@
-import { Token } from "../../../entities/token.entity";
-import { User } from "../../../entities/user.entity";
+import { Token } from "../../../../entities/token.entity";
+import { User } from "../../../../entities/user.entity";
 
 export class LoginResponse {
   userId: string;

@@ -18,7 +18,7 @@ export class FieldFilter extends AbstractFilter {
   constructor(
     query: any,
     prop: string,
-    lookup: LookupFilter,
+    lookup: string,
     value: string,
     notOperator: boolean = false
   ) {
@@ -68,6 +68,7 @@ export class FieldFilter extends AbstractFilter {
     if (this.notOperator) {
       queryToAdd[this.prop] = Not(queryToAdd[this.prop]);
     }
+
     this.query["where"] = {
       ...this.query["where"],
       ...queryToAdd,

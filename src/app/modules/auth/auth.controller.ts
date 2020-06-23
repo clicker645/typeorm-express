@@ -1,62 +1,36 @@
+import * as asyncHandler from "express-async-handler";
+import { Request, Response, Router } from "express";
+import { inject, injectable } from "inversify";
+
 import { LoginDto } from "./dto/login.dto";
 import { AuthService } from "./auth.service";
-import { Controller, Post, Response, Body, Request } from "@decorators/express";
 import { IController } from "../../interfaces/controller.interface";
-import { Injectable } from "@decorators/di";
-import readToken from "../../helpres/auth.heplers";
-import * as statusCode from "http-status-codes";
-import { RegistrationDto } from "./dto/registration.dto";
-import { roleMiddleware } from "../../middleware/role.middleware";
-import * as passport from "passport";
+import { bodyReadMiddleware } from "../../../middleware/body-read.middleware";
+import { authMiddleware } from "../../../middleware/auth.middleware";
 
-@Injectable()
-@Controller("/auth")
+@injectable()
 class AuthController implements IController {
-  constructor(private readonly authService: AuthService) {
+  prefix: string = "/auth";
+  router = Router();
+
+  constructor(@inject(AuthService) private readonly authService: AuthService) {
     console.log("AuthController init");
+    this.initRouters();
   }
 
-  @Post("/login", [
-    passport.authenticate("jwt", { session: false }),
-    roleMiddleware("admin"),
-  ])
-  async login(@Request() req, @Response() res, @Body() loginDto: LoginDto) {
-    let response = null;
-    try {
-      response = await this.authService.login(loginDto);
-    } catch (e) {
-      console.log(e);
-      res.status(e.statusCode).json(e);
-      return;
-    }
+  login = async (req: Request, res: Response) => {
+    const response = await this.authService.login(req.body);
 
     res.json(response);
-  }
+  };
 
-  @Post("/logout")
-  async logout(@Response() res, @Request() req) {
-    let success: boolean = false;
-    const token = readToken(req);
-    try {
-      success = await this.authService.logout(token);
-    } catch (e) {
-      res.status(e.statusCode).json(e);
-    }
-
-    res.status(statusCode.OK).json({ ok: success });
-  }
-
-  @Post("/registration")
-  async registration(@Response() res, @Body() dto: RegistrationDto) {
-    let response = null;
-    try {
-      response = await this.authService.registration(dto);
-    } catch (e) {
-      res.status(e.statusCode).json(e);
-      return;
-    }
-
-    res.json(response);
+  initRouters() {
+    this.router.post(
+      "/login",
+      authMiddleware("admin"),
+      bodyReadMiddleware(LoginDto),
+      asyncHandler(this.login)
+    );
   }
 }
 

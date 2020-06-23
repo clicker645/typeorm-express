@@ -1,33 +1,35 @@
-import { LoginDto } from "./dto/login.dto";
-import { LoginResponse } from "./types/login.response";
+import { inject, injectable } from "inversify";
 import * as jwt from "jsonwebtoken";
-import { Token } from "../../entities/token.entity";
 import * as moment from "moment";
-import { RedisService } from "../../infrastructure/database/redis/redis.service";
-import { ITokenStorage } from "./inerfaces/token-storage.interface";
-import { UserService } from "../user/user.service";
-import { TokenDto } from "./dto/token.dto";
-import { NotFoundError } from "ts-http-errors";
 import * as bcrypt from "bcrypt";
 import {
-  BadRequestError,
-  InternalServerError,
   MethodNotAllowedError,
-} from "ts-http-errors/dist";
-import { Inject, Injectable } from "@decorators/di";
-import { IToken } from "./inerfaces/token.interface";
-import { RegistrationDto } from "./dto/registration.dto";
+  InternalServerError,
+  BadRequestError,
+  NotFoundError,
+} from "ts-http-errors";
 import { plainToClass } from "class-transformer";
-import { CreateUserDto } from "../user/dto/create-user.dto";
-import { JWT_EXPIRES_IN, SECRET_JWT } from "./passport/strategies/jwt.strategy";
-import { Passport } from "./passport";
 
-@Injectable()
+import { LoginDto } from "./dto/login.dto";
+import { RegistrationDto } from "./dto/registration.dto";
+import { TokenDto } from "./dto/token.dto";
+import { LoginResponse } from "./types/login.response";
+import { Token } from "../../../entities/token.entity";
+import { ITokenStorage } from "./inerfaces/token-storage.interface";
+import { UserService } from "../user/user.service";
+import { IToken } from "./inerfaces/token.interface";
+import { CreateUserDto } from "../user/dto/create-user.dto";
+import { RedisService } from "../../../infrastructure/database/redis/redis.service";
+import { Passport } from "./passport";
+import { Config } from "../../../config/config";
+
+@injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UserService,
-    @Inject(RedisService) private readonly storage: ITokenStorage,
-    private readonly passport: Passport
+    @inject(UserService) private readonly userService: UserService,
+    @inject(RedisService) private readonly storage: ITokenStorage,
+    @inject(Passport) private readonly passport: Passport,
+    @inject(Config) private readonly config: Config
   ) {
     console.log("AuthService init");
   }
@@ -44,17 +46,19 @@ export class AuthService {
     }
 
     const tokenDto = new TokenDto().factoryByUser(user);
-    const jwtToken = jwt.sign(tokenDto, SECRET_JWT, {
-      expiresIn: JWT_EXPIRES_IN,
+    const jwtToken = jwt.sign(tokenDto, this.config.jwt.secret, {
+      expiresIn: this.config.jwt.expiresIn,
     });
 
     const token = new Token();
     token.jwt = jwtToken;
-    token.expiresAt = moment().add(JWT_EXPIRES_IN, "seconds").toISOString();
-    token.expiresIn = JWT_EXPIRES_IN;
+    token.expiresAt = moment()
+      .add(this.config.jwt.expiresIn, "seconds")
+      .toISOString();
+    token.expiresIn = this.config.jwt.expiresIn;
 
     try {
-      await this.storage.set(user.id, token, JWT_EXPIRES_IN);
+      await this.storage.set(user.id, token, this.config.jwt.expiresIn);
     } catch (e) {
       throw new InternalServerError(e);
     }
@@ -63,11 +67,12 @@ export class AuthService {
   }
 
   async logout(token: string): Promise<boolean> {
-    const tokenData = jwt.verify(token, SECRET_JWT) as IToken;
+    const tokenData = jwt.verify(token, this.config.jwt.secret) as IToken;
     const ok = await this.storage.exist(tokenData.userId);
     if (!ok) {
       throw new BadRequestError("Error: JWT Token does not exit in storage");
     }
+
     return this.storage.delete(tokenData.userId);
   }
 

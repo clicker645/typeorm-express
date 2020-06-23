@@ -8,7 +8,6 @@ export async function paginate<T>(
   repository: Repository<T>
 ): Promise<PaginationResponse<T>> {
   const countOfRecords = await repository.count(query);
-
   const pagination = new PaginationResponse<T>();
 
   pagination.factory(options.limit, options.page, countOfRecords);

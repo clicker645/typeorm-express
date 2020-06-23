@@ -1,22 +1,24 @@
 import { ExtractJwt, Strategy, VerifiedCallback } from "passport-jwt";
-import { Container, Inject, Injectable } from "@decorators/di";
+import { inject, injectable } from "inversify";
+
 import { IToken } from "../../inerfaces/token.interface";
 import { ITokenStorage } from "../../inerfaces/token-storage.interface";
-import { RedisService } from "../../../../infrastructure/database/redis/redis.service";
+import { RedisService } from "../../../../../infrastructure/database/redis/redis.service";
+import { Config } from "../../../../../config/config";
 
-export const JWT_STRATEGY = "JWT_STRATEGY";
-export const SECRET_JWT = "SomeSecretJwt";
-export const JWT_EXPIRES_IN = 86000;
-
-@Injectable()
+@injectable()
 export class JwtStrategy {
   private readonly _strategy: Strategy;
-  constructor(@Inject(RedisService) private readonly storage: ITokenStorage) {
+  constructor(
+    @inject(RedisService) private readonly storage: ITokenStorage,
+    @inject(Config) private readonly config: Config
+  ) {
     console.log("JwtStrategy init");
+
     this._strategy = new Strategy(
       {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: SECRET_JWT,
+        secretOrKey: this.config.jwt.secret,
       },
       (payload: IToken, done: VerifiedCallback) => {
         let err = null;
@@ -38,13 +40,3 @@ export class JwtStrategy {
     return this.storage.exist(token.userId);
   }
 }
-
-Container.provide([
-  {
-    provide: JWT_STRATEGY,
-    useFactory: (redis) => {
-      return new JwtStrategy(redis).strategy;
-    },
-    deps: [RedisService],
-  },
-]);

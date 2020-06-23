@@ -1,24 +1,14 @@
 import * as passport from "passport";
-import { Container, Inject, Injectable } from "@decorators/di";
-import { JWT_STRATEGY, JwtStrategy } from "./strategies/jwt.strategy";
-import { RedisService } from "../../../infrastructure/database/redis/redis.service";
+import { inject, injectable } from "inversify";
+import { JwtStrategy } from "./strategies/jwt.strategy";
 
-@Injectable()
+@injectable()
 export class Passport {
   constructor(
-    @Inject(JWT_STRATEGY) private readonly strategy: passport.Strategy
+    @inject(JwtStrategy)
+    private readonly strategyFactory: () => passport.Strategy
   ) {
     console.log("Passport init");
-    passport.use(strategy);
+    passport.use(strategyFactory());
   }
 }
-
-Container.provide([
-  {
-    provide: Passport,
-    useFactory: (strategy) => {
-      new Passport(strategy);
-    },
-    deps: [JWT_STRATEGY],
-  },
-]);

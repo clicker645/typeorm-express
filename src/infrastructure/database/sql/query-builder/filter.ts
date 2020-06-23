@@ -1,15 +1,13 @@
-import { LookupFilter } from "./lookup.enum";
-
 export abstract class AbstractFilter {
   public readonly prop: string;
-  public readonly lookup: LookupFilter;
+  public readonly lookup: string;
   public readonly value: string;
   public query: any;
 
   protected constructor(
     query: any,
     prop: string,
-    lookup: LookupFilter,
+    lookup: string,
     value: string
   ) {
     this.query = query;

@@ -1,8 +1,8 @@
 import "reflect-metadata";
+import { injectable } from "inversify";
 import { Connection, createConnection } from "typeorm";
-import { Injectable } from "@decorators/di";
 
-@Injectable()
+@injectable()
 export class SqlDatabase {
   connection: Promise<Connection>;
 

@@ -1,14 +1,12 @@
+import "reflect-metadata";
 import * as redis from "redis";
-import { Injectable } from "@decorators/di";
+import { inject, injectable } from "inversify";
+import { Config } from "../../../config/config";
 
-@Injectable()
+@injectable()
 export class RedisConnection {
   public client: redis.RedisClient;
-  constructor() {
-    this.client = redis.createClient({
-      host: process.env.REDIS_HOST,
-      port: process.env.REDIS_PORT,
-      db: process.env.REDIS_DB,
-    });
+  constructor(@inject(Config) private readonly config: Config) {
+    this.client = redis.createClient(config.redis);
   }
 }

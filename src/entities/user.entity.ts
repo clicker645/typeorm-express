@@ -4,12 +4,14 @@ import {
   BeforeUpdate,
   Column,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { statusEnum } from "../modules/user/enums/status.enum";
+import { statusEnum } from "../app/modules/user/enums/status.enum";
 import * as bcrypt from "bcrypt";
 import moment = require("moment");
-import { rolesEnum } from "../modules/user/enums/roles.enum";
+import { rolesEnum } from "../app/modules/user/enums/roles.enum";
+import { TodoItem } from "./todo-item.entity";
 
 @Entity()
 export class User extends BaseEntity {
@@ -56,4 +58,9 @@ export class User extends BaseEntity {
   async setUpdatedAt() {
     this.updatedAt = moment().unix();
   }
+
+  //========================//
+
+  @OneToMany((type) => TodoItem, (item) => item.user)
+  items: TodoItem[];
 }
