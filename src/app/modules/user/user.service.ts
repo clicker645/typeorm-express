@@ -6,7 +6,7 @@ import { PaginationResponse } from "../../infrastructure/database/sql/pagination
 import { paginate } from "../../infrastructure/database/sql/pagination/pagination.service";
 import { PaginationOptions } from "../../infrastructure/database/sql/pagination/pagination.dto";
 import { ExpressQueryBuilder } from "../../infrastructure/database/sql/query-builder/query-builder";
-import { Inject, Injectable } from "@decorators/di";
+import { Injectable } from "@decorators/di";
 
 @Injectable()
 export class UserService {
@@ -18,9 +18,6 @@ export class UserService {
       .then((connection) => {
         this.repository = connection.getRepository(User);
       })
-      .catch((e) => {
-        throw new Error(e);
-      });
   }
 
   async find(
@@ -39,7 +36,7 @@ export class UserService {
   }
 
   async create(dto: CreateUserDto): Promise<User> {
-    const user = await this.repository.create(dto);
+    const user = this.repository.create(dto);
     const result = await this.repository.save(user);
 
     return result;
